@@ -2,6 +2,7 @@
 import './App.css';
 import React from "react";
 import axios from "axios";
+import Movie from "./Movie";
 
 class App extends React.Component {
 
@@ -9,16 +10,15 @@ class App extends React.Component {
     isLoading : true
   }
 
-  componentDidMount() { // 처음 렌더링 된 후
-    console.log("I`m Mounted");
-  }
-
-  componentDidUpdate() { // 개발자가 setState 호출 시 render 후 실행
-    console.log("I`m Updating");
-  }
-
   getMovies = async () => {
-    const movies = await axios.get("https://yts-proxy.now.sh/list_movies.json");
+    const { 
+      data : { 
+        data: { movies } 
+      }
+     } = await axios.get("https://yts-proxy.now.sh/list_movies.json?sort_by=rating");
+    console.log(movies);
+
+    this.setState({movies, isLoading : false});
   }
 
   componentDidMount() {
@@ -28,14 +28,36 @@ class App extends React.Component {
   render () {
     console.log("I`m rendered");
 
-    const { isLoading } = this.state;
+    const { isLoading, movies } = this.state;
 
     return (
-      <div>
-        {isLoading ? "Loading..." : "We are ready"}
-      </div>
+      <section className="container">
+        {isLoading ? (
+          <div className="loader">
+            <span className="loader__text">Loading...</span>
+          </div>
+        ) : (
+          <div className="movies">
+            {movies.map(movie => (
+              <Movie
+              key = {movie.id}
+              id = {movie.id}
+              year = {movie.year}
+              title = {movie.title}
+              summary = { movie.summary }
+              poster = { movie.medium_cover_image }
+              genres = { movie.genres }
+              />
+            ))}
+          </div>
+        )}
+      </section>
     )
+
+
+
   }
 }
+
 
 export default App;
